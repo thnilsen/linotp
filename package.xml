@@ -36,6 +36,7 @@
 			</file>
 			<file name="config.inc.php.dist" role="data"></file>
 			<file name="localization/en_US.inc" role="data"></file>
+			<file name="localization/nb_NO.inc" role="data"></file>
 		</dir>
 		<!-- / -->
 	</contents>
