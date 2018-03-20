@@ -25,7 +25,8 @@ class linotp extends rcube_plugin
     $this->linotp_server = $rcmail->config->get('linotp_server', 'localhost');
     $this->linotp_port = $rcmail->config->get('linotp_port', 443);
     $this->linotp_emergencypw = $rcmail->config->get('linotp_emergencypw', '');
-    
+    $this->linotp_inc_pass = $rcmail->config->get('linotp_inc_pwd', false);
+
     // login form modification hook.
     $this->add_hook('template_object_loginform', array($this,'linotp_loginform'));
 
@@ -50,32 +51,39 @@ class linotp extends rcube_plugin
 
     $user = $args['user'];
 	$pass = $args['pass'];
-    $code = get_input_value('_code', RCUBE_INPUT_POST);
+    $code = rcube_utils::get_input_value('_code', rcube_utils::INPUT_POST);
 
-    if (!self::linotp_auth($user, $pass, $code, $this->linotp_server, $this->linotp_port, $this->linotp_emergencypw))
+    rcube::write_log('errors', 'linotp: OTP Code: ' . $code);
+
+    if (!self::linotp_auth($user, $pass, $code, $this->linotp_server, $this->linotp_port, $this->linotp_emergencypw, $this->linotp_inc_pass))
     {
-      write_log('errors', 'linotp: OTP verfication failed');
+      rcube::write_log('errors', 'linotp: OTP verfication failed');
       $args['abort'] = true;
     }
 
     return $args;
   }
   
-  function linotp_auth($user, $pass, $code, $server, $port, $emergencypw)
+  function linotp_auth($user, $pass, $code, $server, $port, $emergencypw, $inc_pass)
   {
 	$sock = fsockopen("ssl://".$server, $port, $errno, $errstr, 30);
 	if (!$sock) {
-		write_log('errors',"Network error: $errstr ($errno)");
+		rcube::write_log('errors',"Network error: $errstr ($errno)");
 		if ($code == $emergencypw){
-			write_log('errors',"Allow user $user due to emergency password");
+			rcube::write_log('errors',"Allow user $user due to emergency password");
 			return 1;
 		}
-		write_log('errors',"Disallow user $user due to network error");
+		rcube::write_log('errors',"Disallow user $user due to network error");
 		return 0;
 	}
 
-	$data = "user=" . urlencode(strtolower($user)) . "&pass=" . urlencode($pass.$code);
-	$request = "POST /validate/check HTTPS/1.1\r\n";
+	$data = "user=" . urlencode(strtolower($user)) . "&pass=" . urlencode($code);
+	// If password is to be included as part of the OTP
+	if ( $inc_pass ) {
+		$data = "user=" . urlencode(strtolower($user)) . "&pass=" . urlencode($pass.$code);
+	}
+	//$request = "POST /validate/check HTTPS/1.1\r\n";
+	$request = "POST /validate/check HTTP/1.1\r\n";
 	$request .= "Host: ".$server."\r\n";
 	$request .= "Content-type: application/x-www-form-urlencoded\r\n";
 	$request .= "Content-length: " . strlen($data) . "\r\n";
@@ -94,7 +102,8 @@ class linotp extends rcube_plugin
 	
 	$pos = strpos ( $body , "\"value\": true");
 	if (!$pos) {
-		write_log('errors', $user." not authorized");
+		rcube::write_log('errors', $user." not authorized");
+
 		return 0;
 	}
 	if ($pos > 0){
