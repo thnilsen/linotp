@@ -6,7 +6,7 @@ Introduction
 
 This plugin adds an additional input box to the login form where the user has to additionally enter the Linotp OTP code in order to successfully authenticate.
 
-This plugin has been tested with Roundcube version 1.1 and LinOTP server had been setup in Ubuntu 14.04 and Google Authenticator was used for generating the OTP code.
+This plugin has been tested with Roundcube version 1.3.4 and LinOTP server had been setup in Centos 7 and Google Authenticator was used for generating the OTP code.
 
 
 Installation
@@ -16,7 +16,7 @@ Installation
 * Upload the linotp plugin to roundcube plugins directory.  
 * Activate the plugin by adding it in roundcube config file (config/main.inc.php).  
 
-$rcmail_config['plugins'] = array('linotp');
+$config['plugins'] = array('linotp');
 
 Configuration
 -------------
