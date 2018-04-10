@@ -2,11 +2,9 @@
 // Linotp server
 $config['linotp_server'] = '<your server>';
 // Linotp port
-$config['linotp_port'] = '<your port>';
+$_config['linotp_port'] = '<your port>';
 // Linotp emergency password
 $config['linotp_emergencypw'] = '<your emergency password>';
-// Include the password as part of the OTP
-// Set to True if you have a LinOTP policy of authentication/otppin=1
-$config['linotp_inc_pwd'] = false;
-
+// IP addresses listed will not be asked for OTP code. Use on internal LAN
+$config['linotp_whitelist'] = array( '10.0.0.0/8', '192.168.0.0/16', '172.16.55.101');
 ?>
